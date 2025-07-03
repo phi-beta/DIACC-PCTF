@@ -11,7 +11,9 @@ import {
   ConformanceCriteria,
   RiskLevel,
   CredentialStatus 
-} from './types';
+} from '../types';
+import { AuthenticationCredential, CredentialType } from './authentication-credential';
+import { AuthenticationSession, SessionParameters } from './authentication-session';
 
 /**
  * Authentication Service Provider implementing PCTF03 requirements
@@ -99,7 +101,7 @@ export class AuthenticationServiceProvider {
       const isValid = await this.validateAuthenticationFactor(credential, authenticationFactor);
       
       if (isValid) {
-        credential.lastUsed = new Date();
+        credential.updateLastUsed();
         return {
           success: true,
           message: 'Authentication successful',
@@ -170,8 +172,7 @@ export class AuthenticationServiceProvider {
       };
     }
 
-    credential.status = CredentialStatus.SUSPENDED;
-    credential.suspensionReason = reason;
+    credential.suspend(reason);
 
     return {
       success: true,
@@ -190,9 +191,7 @@ export class AuthenticationServiceProvider {
       };
     }
 
-    credential.status = CredentialStatus.REVOKED;
-    credential.revocationReason = reason;
-    credential.revokedAt = new Date();
+    credential.revoke(reason);
 
     return {
       success: true,
@@ -272,98 +271,4 @@ export class AuthenticationServiceProvider {
     // cryptographic verification, biometric matching, etc.
     return factor.length > 0 && credential.status === CredentialStatus.ACTIVE;
   }
-}
-
-/**
- * Authentication Credential class
- */
-export class AuthenticationCredential {
-  public credentialId: string;
-  public subjectId: string;
-  public credentialType: CredentialType;
-  public assuranceLevel: AssuranceLevel;
-  public issuedAt: Date;
-  public expiresAt: Date;
-  public status: CredentialStatus;
-  public lastUsed?: Date;
-  public suspensionReason?: string;
-  public revocationReason?: string;
-  public revokedAt?: Date;
-
-  constructor(
-    credentialId: string,
-    subjectId: string,
-    credentialType: CredentialType,
-    assuranceLevel: AssuranceLevel,
-    issuedAt: Date,
-    expiresAt: Date
-  ) {
-    this.credentialId = credentialId;
-    this.subjectId = subjectId;
-    this.credentialType = credentialType;
-    this.assuranceLevel = assuranceLevel;
-    this.issuedAt = issuedAt;
-    this.expiresAt = expiresAt;
-    this.status = CredentialStatus.ACTIVE;
-  }
-
-  isExpired(): boolean {
-    return new Date() > this.expiresAt;
-  }
-}
-
-/**
- * Authentication Session class
- */
-export class AuthenticationSession {
-  public sessionId: string;
-  public subjectId: string;
-  public assuranceLevel: AssuranceLevel;
-  public initiatedAt: Date;
-  public expiresAt: Date;
-  public isActive: boolean;
-
-  constructor(
-    sessionId: string,
-    subjectId: string,
-    assuranceLevel: AssuranceLevel,
-    initiatedAt: Date,
-    maxDuration: number // in minutes
-  ) {
-    this.sessionId = sessionId;
-    this.subjectId = subjectId;
-    this.assuranceLevel = assuranceLevel;
-    this.initiatedAt = initiatedAt;
-    this.expiresAt = new Date(initiatedAt.getTime() + maxDuration * 60 * 1000);
-    this.isActive = true;
-  }
-
-  terminate(): void {
-    this.isActive = false;
-  }
-
-  isExpired(): boolean {
-    return new Date() > this.expiresAt;
-  }
-}
-
-/**
- * Credential types supported
- */
-export enum CredentialType {
-  PASSWORD = 'PASSWORD',
-  BIOMETRIC = 'BIOMETRIC',
-  CERTIFICATE = 'CERTIFICATE',
-  TOKEN = 'TOKEN',
-  SMARTCARD = 'SMARTCARD'
-}
-
-/**
- * Session parameters for session initiation
- */
-export interface SessionParameters {
-  assuranceLevel: AssuranceLevel;
-  maxDuration: number; // in minutes
-  allowConcurrentSessions?: boolean;
-  requireReauthentication?: boolean;
 }

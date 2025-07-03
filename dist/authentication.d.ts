@@ -2,7 +2,9 @@
  * DIACC PCTF03 - Authentication Component
  * Describes how verifying identity allows access to digital systems
  */
-import { AssuranceLevel, ProcessResult, ConformanceCriteria, CredentialStatus } from './types';
+import { AssuranceLevel, ProcessResult, ConformanceCriteria } from './types';
+import { CredentialType } from './authentication-credential';
+import { SessionParameters } from './authentication-session';
 /**
  * Authentication Service Provider implementing PCTF03 requirements
  */
@@ -40,56 +42,5 @@ export declare class AuthenticationServiceProvider {
     private generateSessionId;
     private calculateExpirationDate;
     private validateAuthenticationFactor;
-}
-/**
- * Authentication Credential class
- */
-export declare class AuthenticationCredential {
-    credentialId: string;
-    subjectId: string;
-    credentialType: CredentialType;
-    assuranceLevel: AssuranceLevel;
-    issuedAt: Date;
-    expiresAt: Date;
-    status: CredentialStatus;
-    lastUsed?: Date;
-    suspensionReason?: string;
-    revocationReason?: string;
-    revokedAt?: Date;
-    constructor(credentialId: string, subjectId: string, credentialType: CredentialType, assuranceLevel: AssuranceLevel, issuedAt: Date, expiresAt: Date);
-    isExpired(): boolean;
-}
-/**
- * Authentication Session class
- */
-export declare class AuthenticationSession {
-    sessionId: string;
-    subjectId: string;
-    assuranceLevel: AssuranceLevel;
-    initiatedAt: Date;
-    expiresAt: Date;
-    isActive: boolean;
-    constructor(sessionId: string, subjectId: string, assuranceLevel: AssuranceLevel, initiatedAt: Date, maxDuration: number);
-    terminate(): void;
-    isExpired(): boolean;
-}
-/**
- * Credential types supported
- */
-export declare enum CredentialType {
-    PASSWORD = "PASSWORD",
-    BIOMETRIC = "BIOMETRIC",
-    CERTIFICATE = "CERTIFICATE",
-    TOKEN = "TOKEN",
-    SMARTCARD = "SMARTCARD"
-}
-/**
- * Session parameters for session initiation
- */
-export interface SessionParameters {
-    assuranceLevel: AssuranceLevel;
-    maxDuration: number;
-    allowConcurrentSessions?: boolean;
-    requireReauthentication?: boolean;
 }
 //# sourceMappingURL=authentication.d.ts.map

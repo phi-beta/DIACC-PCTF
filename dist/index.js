@@ -25,6 +25,8 @@ exports.PCTF_VERSION = exports.PCTF_COMPONENTS = exports.PCTFFramework = void 0;
 __exportStar(require("./types"), exports);
 // PCTF Components
 __exportStar(require("./authentication"), exports);
+__exportStar(require("./authentication-credential"), exports);
+__exportStar(require("./authentication-session"), exports);
 __exportStar(require("./verified-person"), exports);
 __exportStar(require("./privacy"), exports);
 // Framework orchestrator

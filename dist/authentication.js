@@ -4,8 +4,10 @@
  * Describes how verifying identity allows access to digital systems
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CredentialType = exports.AuthenticationSession = exports.AuthenticationCredential = exports.AuthenticationServiceProvider = void 0;
+exports.AuthenticationServiceProvider = void 0;
 const types_1 = require("./types");
+const authentication_credential_1 = require("./authentication-credential");
+const authentication_session_1 = require("./authentication-session");
 /**
  * Authentication Service Provider implementing PCTF03 requirements
  */
@@ -23,7 +25,7 @@ class AuthenticationServiceProvider {
     async issueCredential(subjectId, credentialType) {
         try {
             const credentialId = this.generateCredentialId();
-            const credential = new AuthenticationCredential(credentialId, subjectId, credentialType, this.assuranceLevel, new Date(), this.calculateExpirationDate(credentialType));
+            const credential = new authentication_credential_1.AuthenticationCredential(credentialId, subjectId, credentialType, this.assuranceLevel, new Date(), this.calculateExpirationDate(credentialType));
             this.credentials.set(credentialId, credential);
             return {
                 success: true,
@@ -73,7 +75,7 @@ class AuthenticationServiceProvider {
             // Validate authentication factor (simplified)
             const isValid = await this.validateAuthenticationFactor(credential, authenticationFactor);
             if (isValid) {
-                credential.lastUsed = new Date();
+                credential.updateLastUsed();
                 return {
                     success: true,
                     message: 'Authentication successful',
@@ -108,7 +110,7 @@ class AuthenticationServiceProvider {
     async initiateSession(subjectId, sessionParameters) {
         try {
             const sessionId = this.generateSessionId();
-            const session = new AuthenticationSession(sessionId, subjectId, sessionParameters.assuranceLevel, new Date(), sessionParameters.maxDuration);
+            const session = new authentication_session_1.AuthenticationSession(sessionId, subjectId, sessionParameters.assuranceLevel, new Date(), sessionParameters.maxDuration);
             return {
                 success: true,
                 message: 'Session initiated successfully',
@@ -137,8 +139,7 @@ class AuthenticationServiceProvider {
                 timestamp: new Date()
             };
         }
-        credential.status = types_1.CredentialStatus.SUSPENDED;
-        credential.suspensionReason = reason;
+        credential.suspend(reason);
         return {
             success: true,
             message: 'Credential suspended successfully',
@@ -154,9 +155,7 @@ class AuthenticationServiceProvider {
                 timestamp: new Date()
             };
         }
-        credential.status = types_1.CredentialStatus.REVOKED;
-        credential.revocationReason = reason;
-        credential.revokedAt = new Date();
+        credential.revoke(reason);
         return {
             success: true,
             message: 'Credential revoked successfully',
@@ -215,11 +214,11 @@ class AuthenticationServiceProvider {
     calculateExpirationDate(credentialType) {
         const now = new Date();
         switch (credentialType) {
-            case CredentialType.BIOMETRIC:
+            case authentication_credential_1.CredentialType.BIOMETRIC:
                 return new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 year
-            case CredentialType.PASSWORD:
+            case authentication_credential_1.CredentialType.PASSWORD:
                 return new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 days
-            case CredentialType.CERTIFICATE:
+            case authentication_credential_1.CredentialType.CERTIFICATE:
                 return new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); // 2 years
             default:
                 return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days
@@ -232,54 +231,4 @@ class AuthenticationServiceProvider {
     }
 }
 exports.AuthenticationServiceProvider = AuthenticationServiceProvider;
-/**
- * Authentication Credential class
- */
-class AuthenticationCredential {
-    constructor(credentialId, subjectId, credentialType, assuranceLevel, issuedAt, expiresAt) {
-        this.credentialId = credentialId;
-        this.subjectId = subjectId;
-        this.credentialType = credentialType;
-        this.assuranceLevel = assuranceLevel;
-        this.issuedAt = issuedAt;
-        this.expiresAt = expiresAt;
-        this.status = types_1.CredentialStatus.ACTIVE;
-    }
-    isExpired() {
-        return new Date() > this.expiresAt;
-    }
-}
-exports.AuthenticationCredential = AuthenticationCredential;
-/**
- * Authentication Session class
- */
-class AuthenticationSession {
-    constructor(sessionId, subjectId, assuranceLevel, initiatedAt, maxDuration // in minutes
-    ) {
-        this.sessionId = sessionId;
-        this.subjectId = subjectId;
-        this.assuranceLevel = assuranceLevel;
-        this.initiatedAt = initiatedAt;
-        this.expiresAt = new Date(initiatedAt.getTime() + maxDuration * 60 * 1000);
-        this.isActive = true;
-    }
-    terminate() {
-        this.isActive = false;
-    }
-    isExpired() {
-        return new Date() > this.expiresAt;
-    }
-}
-exports.AuthenticationSession = AuthenticationSession;
-/**
- * Credential types supported
- */
-var CredentialType;
-(function (CredentialType) {
-    CredentialType["PASSWORD"] = "PASSWORD";
-    CredentialType["BIOMETRIC"] = "BIOMETRIC";
-    CredentialType["CERTIFICATE"] = "CERTIFICATE";
-    CredentialType["TOKEN"] = "TOKEN";
-    CredentialType["SMARTCARD"] = "SMARTCARD";
-})(CredentialType || (exports.CredentialType = CredentialType = {}));
 //# sourceMappingURL=authentication.js.map

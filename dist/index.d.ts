@@ -6,6 +6,8 @@
  */
 export * from './types';
 export * from './authentication';
+export * from './authentication-credential';
+export * from './authentication-session';
 export * from './verified-person';
 export * from './privacy';
 export { PCTFFramework } from './framework';
