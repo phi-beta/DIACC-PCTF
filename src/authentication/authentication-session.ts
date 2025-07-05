@@ -3,7 +3,7 @@
  * Represents an authenticated session with security controls
  */
 
-import { AssuranceLevel } from '../types';
+import { AssuranceLevel } from '../shared/types';
 
 /**
  * Session parameters for session initiation

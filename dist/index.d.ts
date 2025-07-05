@@ -4,13 +4,14 @@
  * This module provides implementations of the Digital Identity and Authentication
  * Council of Canada (DIACC) Pan-Canadian Trust Framework (PCTF) components.
  */
-export * from './types';
+export * from './shared/types';
 export * from './authentication';
-export * from './authentication-credential';
-export * from './authentication-session';
 export * from './verified-person';
 export * from './privacy';
-export { PCTFFramework } from './framework';
+export * from './infrastructure';
+export * from './digital-wallet';
+export * from './trust-registry';
+export { PCTFFramework } from './shared/framework';
 /**
  * PCTF Component Registry
  */

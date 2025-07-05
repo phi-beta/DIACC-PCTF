@@ -22,15 +22,16 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PCTF_VERSION = exports.PCTF_COMPONENTS = exports.PCTFFramework = void 0;
 // Core types and interfaces
-__exportStar(require("./types"), exports);
+__exportStar(require("./shared/types"), exports);
 // PCTF Components
 __exportStar(require("./authentication"), exports);
-__exportStar(require("./authentication-credential"), exports);
-__exportStar(require("./authentication-session"), exports);
 __exportStar(require("./verified-person"), exports);
 __exportStar(require("./privacy"), exports);
+__exportStar(require("./infrastructure"), exports);
+__exportStar(require("./digital-wallet"), exports);
+__exportStar(require("./trust-registry"), exports);
 // Framework orchestrator
-var framework_1 = require("./framework");
+var framework_1 = require("./shared/framework");
 Object.defineProperty(exports, "PCTFFramework", { enumerable: true, get: function () { return framework_1.PCTFFramework; } });
 /**
  * PCTF Component Registry

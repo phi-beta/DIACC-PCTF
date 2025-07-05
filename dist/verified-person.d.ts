@@ -2,7 +2,7 @@
  * DIACC PCTF05 - Verified Person Component
  * Describes identity proofing, linking a subject accessing online services to a real-life person
  */
-import { AssuranceLevel, ProcessResult, ProcessStatus, ConformanceCriteria, EvidenceType } from './types';
+import { AssuranceLevel, ProcessResult, ProcessStatus, ConformanceCriteria, EvidenceType } from './shared/types';
 /**
  * Identity Provider implementing PCTF05 requirements
  */

@@ -6,7 +6,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChallengeResponse = exports.ChallengeInvestigation = exports.AccessResponse = exports.PersonalInformationSummary = exports.ConsentForm = exports.ComplianceChallengeRecord = exports.ConsentStatus = exports.DataSensitivity = exports.PersonalInformationRecord = exports.ConsentRecord = exports.PrivacyPolicy = exports.PrivacyServiceProvider = void 0;
-const types_1 = require("./types");
+const types_1 = require("./shared/types");
 /**
  * Privacy Service Provider implementing PCTF04 requirements
  */

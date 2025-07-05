@@ -5,7 +5,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IdentityProofingSession = exports.VerificationMethod = exports.VerificationStatus = exports.BiometricType = exports.VerifiedPerson = exports.IdentityProvider = void 0;
-const types_1 = require("./types");
+const types_1 = require("./shared/types");
 /**
  * Identity Provider implementing PCTF05 requirements
  */

@@ -11,7 +11,7 @@ import {
   ConformanceCriteria,
   RiskLevel,
   CredentialStatus 
-} from '../types';
+} from '../shared/types';
 import { AuthenticationCredential, CredentialType } from './authentication-credential';
 import { AuthenticationSession, SessionParameters } from './authentication-session';
 

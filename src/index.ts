@@ -6,17 +6,18 @@
  */
 
 // Core types and interfaces
-export * from './types';
+export * from './shared/types';
 
 // PCTF Components
 export * from './authentication';
-export * from './authentication-credential';
-export * from './authentication-session';
 export * from './verified-person';
 export * from './privacy';
+export * from './infrastructure';
+export * from './digital-wallet';
+export * from './trust-registry';
 
 // Framework orchestrator
-export { PCTFFramework } from './framework';
+export { PCTFFramework } from './shared/framework';
 
 /**
  * PCTF Component Registry

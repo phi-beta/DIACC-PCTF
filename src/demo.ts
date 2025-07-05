@@ -12,7 +12,9 @@ import {
   AuthenticationServiceProvider,
   IdentityProvider,
   PrivacyServiceProvider,
-  CredentialType
+  CredentialType,
+  TrustStatus,
+  CredentialStatus
 } from './index';
 
 /**
@@ -53,6 +55,24 @@ export async function demonstratePCTFFramework(): Promise<void> {
     registrationDate: new Date()
   };
 
+  const walletParticipant: PCTFParticipant = {
+    participantId: 'WALLET-001',
+    name: 'SecureWallet Technologies',
+    type: ParticipantType.WALLET_PROVIDER,
+    certificationLevel: AssuranceLevel.LOA2,
+    isActive: true,
+    registrationDate: new Date()
+  };
+
+  const trustRegistry: PCTFParticipant = {
+    participantId: 'TR-001',
+    name: 'National Trust Registry',
+    type: ParticipantType.TRUST_REGISTRY,
+    certificationLevel: AssuranceLevel.LOA4,
+    isActive: true,
+    registrationDate: new Date()
+  };
+
   // Register participants
   console.log('\n📋 Registering participants...');
   
@@ -64,6 +84,12 @@ export async function demonstratePCTFFramework(): Promise<void> {
 
   const rpRegResult = await framework.registerParticipant(relyingParty);
   console.log(`   Relying Party: ${rpRegResult.success ? '✅' : '❌'} ${rpRegResult.message}`);
+
+  const walletRegResult = await framework.registerParticipant(walletParticipant);
+  console.log(`   Wallet Provider: ${walletRegResult.success ? '✅' : '❌'} ${walletRegResult.message}`);
+
+  const trustRegResult = await framework.registerParticipant(trustRegistry);
+  console.log(`   Trust Registry: ${trustRegResult.success ? '✅' : '❌'} ${trustRegResult.message}`);
 
   // Demonstrate Authentication Service
   console.log('\n🔐 Authentication Service Demo...');
@@ -199,6 +225,106 @@ export async function demonstratePCTFFramework(): Promise<void> {
   console.log(`   Authentication Providers: ${statusReport.componentSummary.authenticationProviders}`);
   console.log(`   Identity Providers: ${statusReport.componentSummary.identityProviders}`);
   console.log(`   Privacy Providers: ${statusReport.componentSummary.privacyProviders}`);
+  console.log(`   Infrastructure Providers: ${statusReport.componentSummary.infrastructureProviders}`);
+  console.log(`   Wallet Providers: ${statusReport.componentSummary.walletProviders}`);
+  console.log(`   Trust Registries: ${statusReport.componentSummary.trustRegistries}`);
+
+  // Demonstrate Digital Wallet
+  console.log('\n💳 Digital Wallet Demo...');
+  const walletProvider = framework.getWalletProvider('WALLET-001');
+  if (walletProvider) {
+    const unlockResult = await walletProvider.unlockWallet({ type: 'biometric', value: 'valid-proof' });
+    console.log(`   Wallet Unlock: ${unlockResult.success ? '✅' : '❌'} ${unlockResult.message}`);
+    
+    if (unlockResult.success) {
+      // Simulate storing a credential in the wallet
+      const credential = {
+        credentialId: 'CRED-DEMO-001',
+        issuer: 'ASP-001',
+        subject: 'USER-001',
+        type: ['IdentityCredential'],
+        issuanceDate: new Date(),
+        status: CredentialStatus.ACTIVE,
+        claims: { name: 'John Doe', age: 30 },
+        proof: {
+          type: 'RsaSignature2018',
+          created: new Date(),
+          verificationMethod: 'https://example.com/keys/1',
+          signature: 'sample-signature'
+        },
+        metadata: {
+          schemaId: 'https://schema.org/Person',
+          version: '1.0',
+          trustFramework: 'DIACC-PCTF',
+          assuranceLevel: AssuranceLevel.LOA2
+        }
+      };
+      
+      const storeResult = await walletProvider.storeCredential(credential);
+      console.log(`   Credential Storage: ${storeResult.success ? '✅' : '❌'} ${storeResult.message}`);
+    }
+  }
+
+  // Demonstrate Trust Registry
+  console.log('\n🏛️ Trust Registry Demo...');
+  const trustRegistryProvider = framework.getTrustRegistry('TR-001');
+  if (trustRegistryProvider) {
+    const trustEntry = {
+      participantId: 'DEMO-PARTICIPANT-001',
+      name: 'Demo Organization',
+      type: ParticipantType.VERIFIER,
+      status: TrustStatus.TRUSTED,
+      assuranceLevel: AssuranceLevel.LOA2,
+      certifications: [{
+        certificationId: 'CERT-001',
+        issuingAuthority: 'DIACC',
+        certificationStandard: 'PCTF-2023',
+        issuanceDate: new Date(),
+        scope: ['identity-verification'],
+        status: 'ACTIVE' as const
+      }],
+      registrationDate: new Date(),
+      lastVerified: new Date(),
+      trustScore: 85,
+      governanceFramework: 'DIACC-PCTF',
+      contactInformation: {
+        organizationName: 'Demo Organization',
+        contactPerson: 'Trust Officer',
+        email: 'trust@demo.org',
+        address: {
+          street: '123 Trust St',
+          city: 'Ottawa',
+          province: 'ON',
+          postalCode: 'K1A 0A4',
+          country: 'CA'
+        }
+      },
+      publicKeys: []
+    };
+    
+    const registerResult = await trustRegistryProvider.registerParticipant(trustEntry);
+    console.log(`   Trust Registry Entry: ${registerResult.success ? '✅' : '❌'} ${registerResult.message}`);
+    
+    if (registerResult.success) {
+      const verifyRequest = {
+        participantId: 'DEMO-PARTICIPANT-001',
+        requestedBy: 'RP-001',
+        verificationScope: ['identity-verification'],
+        requestDate: new Date()
+      };
+      
+      const verifyResult = await trustRegistryProvider.verifyTrust(verifyRequest);
+      console.log(`   Trust Verification: ${verifyResult.success ? '✅' : '❌'} ${verifyResult.message}`);
+    }
+  }
+
+  // Demonstrate Infrastructure Service
+  console.log('\n🏗️ Infrastructure Service Demo...');
+  const infraProvider = framework.getInfrastructureProvider('RP-001');
+  if (infraProvider) {
+    const executeResult = await infraProvider.executeProcess();
+    console.log(`   Infrastructure Validation: ${executeResult.success ? '✅' : '❌'} ${executeResult.message}`);
+  }
 
   console.log('\n🎉 DIACC PCTF Framework Demo completed successfully!');
 }

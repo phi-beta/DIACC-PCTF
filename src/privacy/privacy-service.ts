@@ -12,7 +12,7 @@ import {
   ConformanceCriteria,
   RiskLevel,
   PrivacyPrinciple 
-} from './types';
+} from '../shared/types';
 
 /**
  * Privacy Service Provider implementing PCTF04 requirements

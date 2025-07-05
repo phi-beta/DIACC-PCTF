@@ -3,7 +3,7 @@
  * Represents a credential issued by an Authentication Service Provider
  */
 
-import { AssuranceLevel, CredentialStatus } from '../types';
+import { AssuranceLevel, CredentialStatus } from '../shared/types';
 
 export enum CredentialType {
   PASSWORD = 'PASSWORD',

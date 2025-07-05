@@ -3,7 +3,7 @@
  * Describes requirements for handling personal information associated with digital identity,
  * aligned with Canada's Personal Information Protection and Electronic Documents Act (PIPEDA)
  */
-import { ProcessResult, ConformanceCriteria } from './types';
+import { ProcessResult, ConformanceCriteria } from './shared/types';
 /**
  * Privacy Service Provider implementing PCTF04 requirements
  */

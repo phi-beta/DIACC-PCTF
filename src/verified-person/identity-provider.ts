@@ -11,7 +11,7 @@ import {
   ConformanceCriteria,
   RiskLevel,
   EvidenceType 
-} from './types';
+} from '../shared/types';
 
 /**
  * Identity Provider implementing PCTF05 requirements

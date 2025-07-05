@@ -4,9 +4,12 @@
  */
 
 import { AssuranceLevel, ConformanceCriteria, ProcessResult, PCTFParticipant, ParticipantType } from './types';
-import { AuthenticationServiceProvider } from './authentication';
-import { IdentityProvider } from './verified-person';
-import { PrivacyServiceProvider } from './privacy';
+import { AuthenticationServiceProvider } from '../authentication';
+import { IdentityProvider } from '../verified-person';
+import { PrivacyServiceProvider } from '../privacy';
+import { InfrastructureServiceProvider, SecurityLevel } from '../infrastructure';
+import { DigitalWalletProvider, WalletType } from '../digital-wallet';
+import { TrustRegistryProvider } from '../trust-registry';
 
 /**
  * Main PCTF Framework orchestrator class
@@ -18,6 +21,9 @@ export class PCTFFramework {
   private authenticationProviders: Map<string, AuthenticationServiceProvider> = new Map();
   private identityProviders: Map<string, IdentityProvider> = new Map();
   private privacyProviders: Map<string, PrivacyServiceProvider> = new Map();
+  private infrastructureProviders: Map<string, InfrastructureServiceProvider> = new Map();
+  private walletProviders: Map<string, DigitalWalletProvider> = new Map();
+  private trustRegistries: Map<string, TrustRegistryProvider> = new Map();
 
   constructor(frameworkId: string, version: string = '1.0.0') {
     this.frameworkId = frameworkId;
@@ -79,6 +85,27 @@ export class PCTFFramework {
   }
 
   /**
+   * Get infrastructure service provider by participant ID
+   */
+  getInfrastructureProvider(participantId: string): InfrastructureServiceProvider | undefined {
+    return this.infrastructureProviders.get(participantId);
+  }
+
+  /**
+   * Get digital wallet provider by participant ID
+   */
+  getWalletProvider(participantId: string): DigitalWalletProvider | undefined {
+    return this.walletProviders.get(participantId);
+  }
+
+  /**
+   * Get trust registry by participant ID
+   */
+  getTrustRegistry(participantId: string): TrustRegistryProvider | undefined {
+    return this.trustRegistries.get(participantId);
+  }
+
+  /**
    * Assess conformance for a participant across all applicable PCTF components
    */
   async assessConformance(participantId: string): Promise<ProcessResult> {
@@ -124,6 +151,33 @@ export class PCTFFramework {
         const privacyResult = await this.assessComponentConformance('Privacy', privacyCriteria);
         conformanceResults.componentResults.push(privacyResult);
         conformanceResults.overallConformance = conformanceResults.overallConformance && privacyResult.isConformant;
+      }
+
+      // Assess Infrastructure component if applicable
+      const infraProvider = this.infrastructureProviders.get(participantId);
+      if (infraProvider) {
+        const infraCriteria = infraProvider.getConformanceCriteria();
+        const infraResult = await this.assessComponentConformance('Infrastructure', infraCriteria);
+        conformanceResults.componentResults.push(infraResult);
+        conformanceResults.overallConformance = conformanceResults.overallConformance && infraResult.isConformant;
+      }
+
+      // Assess Digital Wallet component if applicable
+      const walletProvider = this.walletProviders.get(participantId);
+      if (walletProvider) {
+        const walletCriteria = walletProvider.getConformanceCriteria();
+        const walletResult = await this.assessComponentConformance('DigitalWallet', walletCriteria);
+        conformanceResults.componentResults.push(walletResult);
+        conformanceResults.overallConformance = conformanceResults.overallConformance && walletResult.isConformant;
+      }
+
+      // Assess Trust Registry component if applicable
+      const trustRegistry = this.trustRegistries.get(participantId);
+      if (trustRegistry) {
+        const trustCriteria = trustRegistry.getConformanceCriteria();
+        const trustResult = await this.assessComponentConformance('TrustRegistry', trustCriteria);
+        conformanceResults.componentResults.push(trustResult);
+        conformanceResults.overallConformance = conformanceResults.overallConformance && trustResult.isConformant;
       }
 
       return {
@@ -225,7 +279,10 @@ export class PCTFFramework {
       componentSummary: {
         authenticationProviders: this.authenticationProviders.size,
         identityProviders: this.identityProviders.size,
-        privacyProviders: this.privacyProviders.size
+        privacyProviders: this.privacyProviders.size,
+        infrastructureProviders: this.infrastructureProviders.size,
+        walletProviders: this.walletProviders.size,
+        trustRegistries: this.trustRegistries.size
       },
       complianceStatus: 'IN_PROGRESS' // This would be calculated based on actual assessments
     };
@@ -279,6 +336,27 @@ export class PCTFFramework {
         this.identityProviders.set(participant.participantId, identityProvider);
         break;
 
+      case ParticipantType.WALLET_PROVIDER:
+        const walletProvider = new DigitalWalletProvider(
+          `WALLET-${participant.participantId}`,
+          participant.participantId,
+          WalletType.CLOUD, // Default wallet type, could be configurable
+          participant.name,
+          participant.certificationLevel
+        );
+        this.walletProviders.set(participant.participantId, walletProvider);
+        break;
+
+      case ParticipantType.TRUST_REGISTRY:
+        const trustRegistry = new TrustRegistryProvider(
+          participant.participantId,
+          participant.name,
+          'DIACC-PCTF',
+          participant.certificationLevel
+        );
+        this.trustRegistries.set(participant.participantId, trustRegistry);
+        break;
+
       case ParticipantType.ISSUER:
       case ParticipantType.VERIFIER:
       case ParticipantType.RELYING_PARTY:
@@ -288,6 +366,18 @@ export class PCTFFramework {
           participant.name
         );
         this.privacyProviders.set(participant.participantId, privacyProvider);
+
+        // Infrastructure services for high-assurance participants
+        if (participant.certificationLevel === AssuranceLevel.LOA3 || 
+            participant.certificationLevel === AssuranceLevel.LOA4) {
+          const infraProvider = new InfrastructureServiceProvider(
+            participant.participantId,
+            participant.name,
+            SecurityLevel.ENHANCED,
+            participant.certificationLevel
+          );
+          this.infrastructureProviders.set(participant.participantId, infraProvider);
+        }
         break;
     }
   }
@@ -394,6 +484,9 @@ export interface FrameworkStatusReport {
     authenticationProviders: number;
     identityProviders: number;
     privacyProviders: number;
+    infrastructureProviders: number;
+    walletProviders: number;
+    trustRegistries: number;
   };
   complianceStatus: string;
 }
